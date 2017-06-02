@@ -3,6 +3,7 @@ import Time exposing (Time, millisecond)
 import Svg exposing (svg, rect, circle)
 import Svg.Attributes exposing (..)
 import Random
+import Basics exposing (floor)
 
 -- Main
 main: Program Never Model Msg
@@ -29,7 +30,7 @@ type alias Star = {
 
 init: (Model, Cmd Msg)
 init =
-  ({stars = [{x = 200, y = 200, ratio = 0.1}], delay = 0.01}, Cmd.none)
+  ({stars = [{x = 150, y = 250, ratio = 0.1}], delay = 0.02}, Cmd.none)
 
 randomStar : Random.Generator Star
 randomStar =
@@ -53,9 +54,22 @@ update msg model =
       ({stars = (List.concat [model.stars, [star]]), delay = model.delay}, Cmd.none)
 
 
+translateCoord : Int -> Float -> Int
+translateCoord coord ratio =
+  floor(toFloat(coord - 200) * ratio) + 200
+
+
 incrementStars : Float -> Star -> Star
 incrementStars delay star =
-  {x = star.x, y = star.y, ratio = star.ratio + delay}
+  {x = star.x, y = star.y, ratio = (incrementRatio star.ratio delay)}
+
+
+incrementRatio : Float -> Float -> Float
+incrementRatio ratio delay =
+  if (ratio + delay) > 2.0 then
+    0.1
+  else
+    ratio + delay
 
 
 generateStarMessage : Int -> Cmd Msg
@@ -86,7 +100,7 @@ drawField stars =
 
 drawStars: Star -> Svg.Svg msg
 drawStars star =
-  circle [ cx(toString star.x), cy(toString star.y), r(toString(8*star.ratio)), fill "#FFFFFF"] []
+  circle [ cx(toString (translateCoord star.x star.ratio)), cy(toString (translateCoord star.y star.ratio)), r(toString(4*star.ratio)), fill "#FFFFFF"] []
 
 
 -- Subscriptions
